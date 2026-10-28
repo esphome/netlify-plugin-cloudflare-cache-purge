@@ -1,0 +1,30 @@
+name: netlify-plugin-cloudflare-cache-purge
+inputs:
+  - name: immutablePrefixes
+    description: Path prefixes (relative to the publish dir) of content-hashed files. Added or removed files below them are never purged, only changed ones.
+    required: false
+    default:
+      - _astro/
+      - pagefind/fragment/
+      - pagefind/index/
+  - name: maxUrls
+    description: Above this many URLs to purge, the whole hostname is purged instead.
+    required: false
+    default: 5000
+  - name: maxPrefixes
+    description: Above this many prefixes to purge, the whole hostname is purged instead.
+    required: false
+    default: 300
+  - name: contexts
+    description: Netlify deploy contexts the plugin runs in.
+    required: false
+    default:
+      - production
+      - branch-deploy
+  - name: manifestPath
+    description: Path of the purge manifest inside the publish dir. It is served from the site so the next deploy can diff against it.
+    required: false
+    default: cf-purge-manifest.json
+  - name: siteUrl
+    description: Site URL to take the purge hostname from. Defaults to the SITE_URL environment variable, else URL.
+    required: false

@@ -1,0 +1,84 @@
+name: Release Drafter
+
+# Keeps a draft release for the next version up to date on every push to main,
+# with the version resolved from the merged PRs' labels, and commits that
+# version to package.json so the tag points at a commit whose package.json
+# matches. Publishing the draft (by hand, in the GitHub UI) creates the tag;
+# with immutable releases enabled, the tag and release are locked from then on.
+# Nothing else runs on publish: sites install the package straight from the tag.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to draft instead of the one resolved from labels (e.g. 1.0.0 for the first release)
+        required: false
+        type: string
+        default: ""
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update-release-draft:
+    name: Update release draft
+    runs-on: ubuntu-latest
+    steps:
+      # An App token (not GITHUB_TOKEN) so the version bump can be pushed to a
+      # protected main and its push triggers CI.
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.ESPHOME_GITHUB_APP_CLIENT_ID }}
+          private-key: ${{ secrets.ESPHOME_GITHUB_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: read
+
+      - uses: release-drafter/release-drafter@978bb0b30c5ee8cdd332ced253758157150d43f0 # v7.10.0
+        id: drafter
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          version: ${{ inputs.version }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Set package version
+        env:
+          VERSION: ${{ steps.drafter.outputs.resolved_version }}
+        run: npm version "$VERSION" --no-git-tag-version --allow-same-version
+
+      # The bump commit's own push re-runs this workflow, which finds nothing
+      # to change and stops.
+      - name: Commit version bump
+        env:
+          VERSION: ${{ steps.drafter.outputs.resolved_version }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "package.json is already at $VERSION"
+            exit 0
+          fi
+          if ! user_id=$(gh api "/users/${APP_SLUG}[bot]" --jq .id); then
+            echo "::error::Could not look up the ${APP_SLUG}[bot] user."
+            exit 1
+          fi
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${user_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+          git commit -am "Bump version to $VERSION"
+          git push

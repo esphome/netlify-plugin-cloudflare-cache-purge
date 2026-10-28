@@ -1,0 +1,43 @@
+{
+  "name": "@esphome/netlify-plugin-cloudflare-cache-purge",
+  "version": "1.0.0",
+  "description": "Netlify build plugin that purges only the changed URLs from the Cloudflare cache after a deploy",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "manifest.yml"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test --experimental-test-coverage --test-coverage-include=index.js --test-coverage-lines=100 --test-coverage-branches=100 --test-coverage-functions=100 \"tests/*.test.js\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "keywords": [
+    "netlify",
+    "netlify-plugin",
+    "cloudflare",
+    "cache"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/esphome/netlify-plugin-cloudflare-cache-purge.git"
+  },
+  "bugs": {
+    "url": "https://github.com/esphome/netlify-plugin-cloudflare-cache-purge/issues"
+  },
+  "homepage": "https://github.com/esphome/netlify-plugin-cloudflare-cache-purge#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "yaml": "^2.9.1"
+  }
+}
