@@ -29,6 +29,12 @@ permissions:
 jobs:
   update-release-draft:
     name: Update release draft
+    # Skip the push of this workflow's own version bump: re-resolving the version
+    # there would drop a version given to a manual run (e.g. the first 1.0.0).
+    if: >-
+      github.event_name != 'push' ||
+      !(endsWith(github.event.head_commit.author.name, '[bot]') &&
+        startsWith(github.event.head_commit.message, 'Bump version to '))
     runs-on: ubuntu-latest
     steps:
       # An App token (not GITHUB_TOKEN) so the version bump can be pushed to a
@@ -61,8 +67,6 @@ jobs:
           VERSION: ${{ steps.drafter.outputs.resolved_version }}
         run: npm version "$VERSION" --no-git-tag-version --allow-same-version
 
-      # The bump commit's own push re-runs this workflow, which finds nothing
-      # to change and stops.
       - name: Commit version bump
         env:
           VERSION: ${{ steps.drafter.outputs.resolved_version }}
