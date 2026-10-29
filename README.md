@@ -43,10 +43,10 @@ set (so deploy previews and forks without secrets still build).
 The plugin is distributed as a git tag, not on npm. Add it to the site's `devDependencies`:
 
 ```bash
-npm install -D github:esphome/netlify-plugin-cloudflare-cache-purge#v1.0.0
+npm install -D github:esphome/netlify-plugin-cloudflare-cache-purge#v1.0.1
 ```
 
-This adds `"@esphome/netlify-plugin-cloudflare-cache-purge": "github:esphome/netlify-plugin-cloudflare-cache-purge#v1.0.0"`
+This adds `"@esphome/netlify-plugin-cloudflare-cache-purge": "github:esphome/netlify-plugin-cloudflare-cache-purge#v1.0.1"`
 to `package.json`. Then enable it in `netlify.toml` by its package name:
 
 ```toml
@@ -118,7 +118,11 @@ npm test
 ```
 
 `npm test` runs the `node:test` suite with coverage and fails below 100% line, branch and function coverage of
-`index.js`.
+`index.js` and `lib.js`.
+
+`index.js` is the plugin entry point and must export only Netlify event handlers (`onPreBuild`, `onBuild`,
+`onPostBuild`, `onSuccess`, `onError`, `onEnd`): Netlify fails the build with "Invalid event" for any other named
+export. Everything else lives in `lib.js`, which the tests import.
 
 The package has no runtime dependencies and no build step. Do not add a `prepare` script: npm runs it on every site
 that installs the package from git, after installing this repo's dev dependencies.
