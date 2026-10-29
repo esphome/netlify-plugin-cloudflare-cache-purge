@@ -1,6 +1,6 @@
 {
   "name": "@esphome/netlify-plugin-cloudflare-cache-purge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Netlify build plugin that purges only the changed URLs from the Cloudflare cache after a deploy",
   "type": "module",
   "main": "index.js",
