@@ -101,7 +101,7 @@ function mockFetch(handler) {
   };
 }
 
-const purgeCalls = () => calls.filter((c) => c.url.includes("api.cloudflare.com"));
+const purgeCalls = () => calls.filter((c) => new URL(c.url).hostname === "api.cloudflare.com");
 
 function makeUtils() {
   const utils = { failed: [], statuses: [] };
